@@ -1,0 +1,219 @@
+<html>
+    <head>
+        <title>MySQL Differences Detector</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+        <style>
+
+
+            /*
+             * Base structure
+             */
+
+            body {
+                text-shadow: 0 .05rem .1rem rgba(0, 0, 0, .5);
+                box-shadow: inset 0 0 5rem rgba(0, 0, 0, .5);
+            }
+
+            .cover-container {
+                max-width: 42em;
+            }
+
+            .form-floating label,.form-floating input{color:#000; text-shadow: none;box-shadow: none;}
+
+            .list-group-item {
+                color:#fff;
+                background: transparent;
+            }
+        </style>
+
+    </head>
+    <body class="d-flex h-100 text-center text-bg-dark">
+
+        <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+            <header class="mb-auto">
+                <div>
+                    <h3>MySQL Differences Detector</h3>
+                </div>
+            </header>
+
+            <div class="modal-dialog" role="document">
+                <div class="modal-content rounded-4 shadow">
+                    <div class="modal-header p-5 pb-4 border-bottom-0">
+                        <h5 class="fw-bold mb-0">Please enter mysql connection information.</h5>
+                    </div>
+
+                    <div class="modal-body p-5 pt-0">
+                        <form id="connection" action="ajax.php" method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                    <small class="text-muted">First Database information:</small>
+                                    <div class="form-floating mb-3 mt-2">
+                                        <input type="text" class="form-control rounded-3" id="master_host" name="master_host" placeholder="Host" required>
+                                        <label for="master_host">Host</label>
+                                    </div>
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control rounded-3" id="master_port" name="master_port" placeholder="Port" value="3306" required>
+                                        <label for="master_port">Port</label>
+                                    </div>
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control rounded-3" id="master_username" name="master_username" placeholder="User Name" value="" required>
+                                        <label for="master_username">User Name</label>
+                                    </div>
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control rounded-3" id="master_password" name="master_password"  placeholder="Password" value="" >
+                                        <label for="master_password">Password</label>
+                                    </div>
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control rounded-3" id="master_dbname" name="master_dbname"  placeholder="Database Name" value="" required>
+                                        <label for="master_dbname">Database Name</label>
+                                    </div>
+                            </div>
+                            <div class="col-md-6">
+                                    <small class="text-muted">Second Database information:</small>
+                                    <div class="form-floating mb-3 mt-2">
+                                        <input type="text" class="form-control rounded-3" id="slave_host" name="slave_host" placeholder="Host" required>
+                                        <label for="slave_host">Host</label>
+                                    </div>
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control rounded-3" id="slave_port" name="slave_port" placeholder="Port" value="3306" required>
+                                        <label for="slave_port">Port</label>
+                                    </div>
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control rounded-3" id="slave_username" name="slave_username" placeholder="User Name" value="" required>
+                                        <label for="slave_username">User Name</label>
+                                    </div>
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control rounded-3" id="slave_password" name="slave_password"  placeholder="Password" value="" >
+                                        <label for="slave_password">Password</label>
+                                    </div>
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control rounded-3" id="slave_dbname" name="slave_dbname"  placeholder="Database Name" value="" required>
+                                        <label for="slave_dbname">Database Name</label>
+                                    </div>
+                            </div>
+                        </div>
+
+                        <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Find Differences</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <main class="px-5 mt-5">
+                <p class="lead">With this tool you can see all the differences between two MySQL databases. Thus, you can easily perform migrations between two databases.</p>
+
+            </main>
+
+            <footer class="mt-auto text-white-50">
+                <p>MySQL Differences Detector | Development by <a href="https://github.com/sercanyeniyurt/mysqlDiff.git" class="text-white" target="_blank">Sercan Yeniyurt</a> | 2023</p>
+            </footer>
+        </div>
+
+
+
+        <!-- Modal -->
+        <div class="modal fade " id="connectionTester" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="connectionTesterLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content  text-bg-dark">
+                    <div class="modal-body">
+                        <ul class="list-group">
+                            <li class="list-group-item step1">1. First Database connection testing <span class="processIcon"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="sr-only"></span></div></span></li>
+                            <li class="list-group-item step2">2. Second Database connection testing <span class="processIcon"></span></li>
+                            <li class="list-group-item step3">3. Databases are compared. <span class="processIcon"></span></li>
+                        </ul>
+                        <div class="htmlresult d-none">
+
+                        </div>
+                        <button class="w-100 mb-2 btn btn-sm mt-2 rounded-3 btn-danger closeButton d-none" type="button">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script type="text/javascript">
+
+        feather.replace()
+
+
+
+        function connectionTest(step,host,port,username,password,dbname){
+            $.ajax({
+                type: "POST",
+                url: "/ajax.php",
+                data: "host="+host+"&port="+port+"&username="+username+"&password="+password+"&dbname="+dbname+"&test=1",
+                success: function(data)
+                {
+                    var forwordingStep = parseInt(step)+1;
+                    if(data.connection_test_result===1){
+                        $('.step'+step+' span').html('<i data-feather="check-circle"></i>');
+                        $('.step'+step+'').css('color','green');
+                        $('.step'+forwordingStep+' span').html('<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="sr-only"></span></div>');
+                        if(step===1){
+                            setTimeout(function() {connectionTest(2,$('#slave_host').val(),$('#slave_port').val(),$('#slave_username').val(),$('#slave_password').val(),$('#slave_dbname').val())}, 2000);
+                        }
+                        if(step===2){
+                            diffDb();
+                        }
+                    } else {
+                        $('.step'+step+' span').html('<i data-feather="alert-circle"></i>');
+                        $('.step'+step+'').css('color','red');
+                        $('.closeButton').removeClass('d-none');
+                    }
+                }
+            });
+        }
+        function diffDb(){
+            $.ajax({
+                type: "POST",
+                url: "/ajax.php",
+                data: $('#connection').serialize(),
+                success: function(data)
+                {
+                    $('.step3 span').html('<i data-feather="check-circle"></i>');
+                    $('.step3').css('color','green');
+                    $('.closeButton').removeClass('d-none');
+                    if(data.result===1){
+
+                        html = '<table class="table table-dark mt-2" style="font-size:12px;">\n' +
+                            '                                <thead>\n' +
+                            '                                <tr>\n' +
+                            '                                    <th>Location</th>\n' +
+                            '                                    <th>Error Type</th>\n' +
+                            '                                    <th>Master Value</th>\n' +
+                            '                                    <th>Slave Value</th>\n' +
+                            '                                </tr>\n' +
+                            '                                </thead>\n' +
+                            '                                <tbody>\n'+data.html+'</tbody>\n' +
+                            '                            </table>';
+
+                        $('.htmlresult').html(html);
+                        $('.htmlresult').removeClass('d-none');
+
+                    } else {
+                        $('.htmlresult').html('<div class="alert alert-success mt-2" style="font-size:12px;" role="alert">No difference was found between the two databases. (Based on master database.)</div>');
+                    }
+                }
+            });
+        }
+        $('.closeButton').click(function (){
+            $('.htmlresult').html('');
+            $('#connectionTester').modal('hide');
+            $('.closeButton').addClass('d-none');
+            $('.list-group').html('<li class="list-group-item step1">1. First Database connection testing <span class="processIcon"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="sr-only"></span></div></span></li>\n' +
+                '<li class="list-group-item step2">2. Second Database connection testing <span class="processIcon"></span></li>\n' +
+                '<li class="list-group-item step3">3. Databases are compared. <span class="processIcon"></span></li>');
+        });
+
+
+        $("#connection").submit(function(e) {
+            e.preventDefault();
+            $('#connectionTester').modal('show');
+            setTimeout(function() {connectionTest(1,$('#master_host').val(),$('#master_port').val(),$('#master_username').val(),$('#master_password').val(),$('#master_dbname').val())}, 2000);
+
+        });
+    </script>
+</html>
